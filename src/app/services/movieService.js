@@ -120,3 +120,38 @@ export async function fetchMovieTrailer(id) {
     throw error;
   }
 }
+
+export async function fetchMovieReviews(id, page = 1) {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/movie/${id}/reviews?api_key=${API_KEY}&page=${page}`
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch movie reviews');
+    }
+
+    const data = await response.json();
+    
+    return {
+      reviews: data.results.map(review => ({
+        id: review.id,
+        author: review.author,
+        content: review.content,
+        rating: review.author_details?.rating,
+        avatarUrl: review.author_details?.avatar_path ? 
+          (review.author_details.avatar_path.startsWith('/http') ? 
+            review.author_details.avatar_path.slice(1) : 
+            `${IMAGE_BASE_URL}/w185${review.author_details.avatar_path}`
+          ) : null,
+        createdAt: new Date(review.created_at).toLocaleDateString(),
+      })),
+      totalPages: data.total_pages,
+      totalResults: data.total_results,
+      currentPage: data.page
+    };
+  } catch (error) {
+    console.error('Error fetching movie reviews:', error);
+    throw error;
+  }
+}

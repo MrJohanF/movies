@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Star, Clock, Calendar, Film, Users, ChevronLeft, Play, Plus, Heart } from 'lucide-react';
-import { fetchMovieDetails, fetchMovieTrailer } from '../../services/movieService';
+import { fetchMovieDetails, fetchMovieTrailer, fetchMovieReviews } from '../../services/movieService';
 import { motion } from 'framer-motion';
 import TrailerModal from '../../components/TrailerModal';
+import ReviewCard from '../../components/ReviewCard';
 
 export default function MovieDetail({ params }) {
   const [movie, setMovie] = useState(null);
@@ -15,17 +16,24 @@ export default function MovieDetail({ params }) {
   const [isLiked, setIsLiked] = useState(false);
   const [trailerKey, setTrailerKey] = useState(null);
   const [isTrailerOpen, setIsTrailerOpen] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const [totalReviewPages, setTotalReviewPages] = useState(0);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
 
   useEffect(() => {
     const loadMovie = async () => {
       try {
-        const [movieData, trailerKey] = await Promise.all([
+        const [movieData, trailerKey, reviewsData] = await Promise.all([
           fetchMovieDetails(params.id),
-          fetchMovieTrailer(params.id)
+          fetchMovieTrailer(params.id),
+          fetchMovieReviews(params.id)
         ]);
 
             setMovie(movieData);
         setTrailerKey(trailerKey);
+        setReviews(reviewsData.reviews);
+        setTotalReviewPages(reviewsData.totalPages);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -35,6 +43,22 @@ export default function MovieDetail({ params }) {
 
     loadMovie();
   }, [params.id]);
+
+  const loadMoreReviews = async () => {
+    if (isLoadingReviews || reviewsPage >= totalReviewPages) return;
+    
+    setIsLoadingReviews(true);
+    try {
+      const nextPage = reviewsPage + 1;
+      const reviewsData = await fetchMovieReviews(params.id, nextPage);
+      setReviews(prevReviews => [...prevReviews, ...reviewsData.reviews]);
+      setReviewsPage(nextPage);
+    } catch (err) {
+      console.error('Error loading more reviews:', err);
+    } finally {
+      setIsLoadingReviews(false);
+    }
+  };
 
 
   const handleTrailerClick = () => {
@@ -233,6 +257,41 @@ export default function MovieDetail({ params }) {
           </div>
         </div>
       </section>
+
+
+ {/* Reviews Section */}
+ <section className="container mx-auto px-4 py-12">
+        <h2 className="text-2xl font-bold mb-6">Reseñas de Usuarios</h2>
+        
+        {reviews.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 gap-6">
+              {reviews.map(review => (
+                <ReviewCard key={review.id} review={review} />
+              ))}
+            </div>
+            
+            {reviewsPage < totalReviewPages && (
+              <div className="mt-8 text-center">
+                <button
+                  onClick={loadMoreReviews}
+                  disabled={isLoadingReviews}
+                  className="px-6 py-3 bg-blue-600 rounded-full hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {isLoadingReviews ? 'Cargando...' : 'Cargar más reseñas'}
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="text-center py-12 text-gray-400">
+            No hay reseñas disponibles para esta película.
+          </div>
+        )}
+      </section>
+
+
+
     </motion.main>
 
 <TrailerModal
