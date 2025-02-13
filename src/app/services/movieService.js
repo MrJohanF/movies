@@ -18,21 +18,21 @@ export async function fetchMovies({ page = 1, genre = '', searchQuery = '', year
   } else {
     // Determine the endpoint based on the category.
     switch (category) {
-      case 'trending':
-        // Trending movies (using week for a broader range)
+      case 'tendencia':
+        
         url = `${BASE_URL}/trending/movie/week?api_key=${API_KEY}&page=${page}`;
         break;
-      case 'new':
-        // New releases sorted by release date descending
+      case 'nuevo':
+        
         url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=release_date.desc&page=${page}`;
         break;
       case 'top':
-        // Top rated movies with a minimum vote count to ensure quality
+        
         url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=vote_average.desc&vote_count.gte=100&page=${page}`;
         break;
-      case 'all':
+      case 'todo':
       default:
-        // Default discover endpoint for all movies
+        
         url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&page=${page}`;
         break;
     }

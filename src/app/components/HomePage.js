@@ -168,7 +168,7 @@ export default function HomePage({ initialMovies, genres }) {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           {/* Custom Tabs */}
           <div className="flex bg-gray-800/50 rounded-lg p-1 gap-1">
-            {['all', 'trending', 'new', 'top'].map((tab) => (
+            {['todo', 'tendencia', 'nuevo', 'top'].map((tab) => (
               <button
                 key={tab}
                 type="button"
