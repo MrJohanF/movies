@@ -93,3 +93,30 @@ export async function fetchGenres() {
   const data = await response.json();
   return data.genres;
 }
+
+
+export async function fetchMovieTrailer(id) {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/movie/${id}/videos?api_key=${API_KEY}`
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch movie trailer');
+    }
+
+    const data = await response.json();
+    
+    // Find the first official trailer from YouTube
+    const trailer = data.results?.find(
+      video => 
+        video.site === "YouTube" && 
+        (video.type === "Trailer" || video.type === "Teaser")
+    );
+
+    return trailer ? trailer.key : null;
+  } catch (error) {
+    console.error('Error fetching movie trailer:', error);
+    throw error;
+  }
+}

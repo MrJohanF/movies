@@ -4,20 +4,28 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Star, Clock, Calendar, Film, Users, ChevronLeft, Play, Plus, Heart } from 'lucide-react';
-import { fetchMovieDetails } from '../../services/movieService';
+import { fetchMovieDetails, fetchMovieTrailer } from '../../services/movieService';
 import { motion } from 'framer-motion';
+import TrailerModal from '../../components/TrailerModal';
 
 export default function MovieDetail({ params }) {
   const [movie, setMovie] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isLiked, setIsLiked] = useState(false);
+  const [trailerKey, setTrailerKey] = useState(null);
+  const [isTrailerOpen, setIsTrailerOpen] = useState(false);
 
   useEffect(() => {
     const loadMovie = async () => {
       try {
-        const data = await fetchMovieDetails(params.id);
-        setMovie(data);
+        const [movieData, trailerKey] = await Promise.all([
+          fetchMovieDetails(params.id),
+          fetchMovieTrailer(params.id)
+        ]);
+
+            setMovie(movieData);
+        setTrailerKey(trailerKey);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -27,6 +35,15 @@ export default function MovieDetail({ params }) {
 
     loadMovie();
   }, [params.id]);
+
+
+  const handleTrailerClick = () => {
+    if (trailerKey) {
+      setIsTrailerOpen(true);
+    } else {
+      alert('Lo siento, no hay trailer disponible para esta película.');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -53,6 +70,7 @@ export default function MovieDetail({ params }) {
   if (!movie) return null;
 
   return (
+    <>
     <motion.main
       className="min-h-screen bg-gray-900 text-white"
       initial={{ opacity: 0, y: 10 }}
@@ -121,7 +139,9 @@ export default function MovieDetail({ params }) {
               </p>
 
               <div className="flex flex-wrap gap-4">
-                <button className="flex items-center gap-2 px-6 py-3 bg-blue-600 rounded-full hover:bg-blue-700 transition">
+                <button 
+                onClick={handleTrailerClick}
+                className="flex items-center gap-2 px-6 py-3 bg-blue-600 rounded-full hover:bg-blue-700 transition">
                   <Play className="w-5 h-5" fill="currentColor" />
                   Ver trailer
                 </button>
@@ -214,5 +234,13 @@ export default function MovieDetail({ params }) {
         </div>
       </section>
     </motion.main>
+
+<TrailerModal
+isOpen={isTrailerOpen}
+onClose={() => setIsTrailerOpen(false)}
+trailerKey={trailerKey}
+/>
+</>
+
   );
 }
