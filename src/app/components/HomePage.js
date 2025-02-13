@@ -34,7 +34,10 @@ export default function HomePage({ initialMovies, genres }) {
   useEffect(() => {
     const savedScroll = sessionStorage.getItem('homeScrollPosition');
     if (savedScroll) {
-      window.scrollTo(0, Number(savedScroll));
+      window.scrollTo({
+        top: Number(savedScroll),
+        behavior: 'instant' // or 'smooth' = animated scroll
+      });
       sessionStorage.removeItem('homeScrollPosition');
     }
   }, []);
@@ -279,7 +282,7 @@ export default function HomePage({ initialMovies, genres }) {
                 key={movie.id}
                 onClick={() => {
                   // Save the current scroll position before navigating to detail view
-                  sessionStorage.setItem('homeScrollPosition', window.screenY);
+                  sessionStorage.setItem('homeScrollPosition', window.scrollY || window.pageYOffset);
                 }}
                 className="group bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-xl overflow-hidden hover:scale-105 transition-transform duration-300"
               >
