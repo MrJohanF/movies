@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Star, Clock, Calendar, Film, Users, ChevronLeft, Play, Plus, Heart } from 'lucide-react';
 import { fetchMovieDetails } from '../../services/movieService';
+import { motion } from 'framer-motion';
 
 export default function MovieDetail({ params }) {
   const [movie, setMovie] = useState(null);
@@ -52,7 +53,13 @@ export default function MovieDetail({ params }) {
   if (!movie) return null;
 
   return (
-    <main className="min-h-screen bg-gray-900 text-white">
+    <motion.main
+      className="min-h-screen bg-gray-900 text-white"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.5 }}
+    >
       {/* Hero Section with Backdrop */}
       <div className="relative h-[80vh]">
         <Image
@@ -63,14 +70,14 @@ export default function MovieDetail({ params }) {
           className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80" />
-        
+
         {/* Back Button */}
         <Link 
           href="/"
           className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-gray-900/50 backdrop-blur-sm rounded-full hover:bg-gray-900/80 transition"
         >
           <ChevronLeft className="w-5 h-5" />
-          Atras
+          Atrás
         </Link>
 
         {/* Movie Info */}
@@ -187,18 +194,18 @@ export default function MovieDetail({ params }) {
                   <p>{movie.year}</p>
                 </div>
                 <div>
-                  <h3 className="text-gray-400 mb-1">Duracion</h3>
+                  <h3 className="text-gray-400 mb-1">Duración</h3>
                   <p>{movie.duration}</p>
                 </div>
                 <div>
-                  <h3 className="text-gray-400 mb-1">Calificacion</h3>
+                  <h3 className="text-gray-400 mb-1">Calificación</h3>
                   <p className="flex items-center gap-1">
                     <Star className="w-4 h-4 text-yellow-500" />
                     {movie.rating}
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-gray-400 mb-1">Generos</h3>
+                  <h3 className="text-gray-400 mb-1">Géneros</h3>
                   <p>{movie.genre.join(", ")}</p>
                 </div>
               </div>
@@ -206,6 +213,6 @@ export default function MovieDetail({ params }) {
           </div>
         </div>
       </section>
-    </main>
+    </motion.main>
   );
 }

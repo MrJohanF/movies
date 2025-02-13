@@ -9,13 +9,35 @@ export const getImageUrl = (path, size = 'original') => {
   return `${IMAGE_BASE_URL}/${size}${path}`;
 };
 
-export async function fetchMovies({ page = 1, genre = '', searchQuery = '', year = '' }) {
-  let url;
-  
+export async function fetchMovies({ page = 1, genre = '', searchQuery = '', year = '', category = 'all' }) {
+  let url = '';
+
   if (searchQuery) {
+    // Use the search endpoint when a query is provided.
     url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(searchQuery)}&page=${page}`;
   } else {
-    url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&page=${page}`;
+    // Determine the endpoint based on the category.
+    switch (category) {
+      case 'trending':
+        // Trending movies (using week for a broader range)
+        url = `${BASE_URL}/trending/movie/week?api_key=${API_KEY}&page=${page}`;
+        break;
+      case 'new':
+        // New releases sorted by release date descending
+        url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=release_date.desc&page=${page}`;
+        break;
+      case 'top':
+        // Top rated movies with a minimum vote count to ensure quality
+        url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=vote_average.desc&vote_count.gte=100&page=${page}`;
+        break;
+      case 'all':
+      default:
+        // Default discover endpoint for all movies
+        url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&page=${page}`;
+        break;
+    }
+
+    // Append additional filters if provided.
     if (genre) url += `&with_genres=${genre}`;
     if (year) url += `&year=${year}`;
   }

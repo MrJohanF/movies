@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Search, Film, Filter, Star, X, TrendingUp, Calendar, Clock } from 'lucide-react';
+import { Search, Filter, Star, X, TrendingUp, Calendar, Clock } from 'lucide-react';
 import { fetchMovies } from '../services/movieService';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function HomePage({ initialMovies, genres }) {
   const [movies, setMovies] = useState(initialMovies);
@@ -13,31 +14,37 @@ export default function HomePage({ initialMovies, genres }) {
     rating: '',
     year: '',
     searchQuery: '',
-    page: 1
+    page: 1,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [offsetY, setOffsetY] = useState(0);
 
-  const years = Array.from(
-    { length: 20 },
-    (_, i) => new Date().getFullYear() - i
-  );
+  const years = Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - i);
 
-  // Parallax Effect
+  // Parallax Effect for Hero Image
   useEffect(() => {
     const handleScroll = () => setOffsetY(window.pageYOffset);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Debounced movies loading
+  // Restore scroll position if saved when returning from detail view
+  useEffect(() => {
+    const savedScroll = sessionStorage.getItem('homeScrollPosition');
+    if (savedScroll) {
+      window.scrollTo(0, Number(savedScroll));
+      sessionStorage.removeItem('homeScrollPosition');
+    }
+  }, []);
+
+  // Fetch movies when filters or activeTab changes
   useEffect(() => {
     const loadMovies = async () => {
       setIsLoading(true);
       try {
-        const newMovies = await fetchMovies(filters);
+        const newMovies = await fetchMovies({ ...filters, category: activeTab });
         setMovies(newMovies);
       } catch (error) {
         console.error('Error loading movies:', error);
@@ -47,21 +54,21 @@ export default function HomePage({ initialMovies, genres }) {
 
     const debounceTimer = setTimeout(loadMovies, 500);
     return () => clearTimeout(debounceTimer);
-  }, [filters]);
+  }, [filters, activeTab]);
 
   const handleSearch = (e) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       searchQuery: e.target.value,
-      page: 1
+      page: 1,
     }));
   };
 
   const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       [filterType]: value,
-      page: 1
+      page: 1,
     }));
   };
 
@@ -71,15 +78,20 @@ export default function HomePage({ initialMovies, genres }) {
       rating: '',
       year: '',
       searchQuery: '',
-      page: 1
+      page: 1,
     });
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
+    <motion.main
+      className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.5 }}
+    >
       {/* Hero Section with Parallax */}
       <div className="relative h-[80vh] overflow-hidden">
-        {/* Parallax Background Image */}
         <div
           className="absolute inset-0"
           style={{ transform: `translateY(${offsetY * 0.5}px)` }}
@@ -92,9 +104,7 @@ export default function HomePage({ initialMovies, genres }) {
             className="object-cover transition-transform duration-500 ease-out"
           />
         </div>
-        {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-900/90 to-gray-900" />
-        {/* Hero Content */}
         <div className="relative container mx-auto px-4 h-full flex flex-col justify-center items-start">
           <div className="max-w-3xl space-y-6">
             <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500">
@@ -123,28 +133,26 @@ export default function HomePage({ initialMovies, genres }) {
           {[
             {
               icon: <TrendingUp className="w-6 h-6 text-blue-500" />,
-              title: 'Trending Now',
-              value: '2.7k Movies',
-              bg: 'bg-blue-500/20'
+              title: 'En tendencia',
+              value: '2.7k Peliculas',
+              bg: 'bg-blue-500/20',
             },
             {
               icon: <Calendar className="w-6 h-6 text-purple-500" />,
-              title: 'New Releases',
-              value: '485 This Week',
-              bg: 'bg-purple-500/20'
+              title: 'Nuevos Lanzamientos',
+              value: '485 Esta Semana',
+              bg: 'bg-purple-500/20',
             },
             {
               icon: <Clock className="w-6 h-6 text-green-500" />,
-              title: 'Watch Time',
-              value: '1.2M Hours',
-              bg: 'bg-green-500/20'
-            }
+              title: 'Horas de Contenido',
+              value: '1.2M Horas',
+              bg: 'bg-green-500/20',
+            },
           ].map((stat, index) => (
             <div key={index} className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-xl p-6">
               <div className="flex items-center space-x-4">
-                <div className={`p-3 rounded-full ${stat.bg}`}>
-                  {stat.icon}
-                </div>
+                <div className={`p-3 rounded-full ${stat.bg}`}>{stat.icon}</div>
                 <div>
                   <p className="text-gray-400">{stat.title}</p>
                   <p className="text-2xl font-bold">{stat.value}</p>
@@ -160,10 +168,15 @@ export default function HomePage({ initialMovies, genres }) {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           {/* Custom Tabs */}
           <div className="flex bg-gray-800/50 rounded-lg p-1 gap-1">
-            {['Todo', 'Tendencia', 'Nuevo', 'Mas visto'].map((tab) => (
+            {['all', 'trending', 'new', 'top'].map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.target.blur();
+                  setActiveTab(tab);
+                }}
                 className={`px-4 py-2 rounded-md transition-colors ${
                   activeTab === tab
                     ? 'bg-blue-500 text-white'
@@ -175,6 +188,7 @@ export default function HomePage({ initialMovies, genres }) {
             ))}
           </div>
           <button
+            type="button"
             onClick={() => setIsFilterOpen(!isFilterOpen)}
             className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 rounded-lg hover:bg-gray-700 transition-colors"
           >
@@ -195,8 +209,10 @@ export default function HomePage({ initialMovies, genres }) {
                   className="w-full bg-gray-700/50 rounded-lg px-3 py-2 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 >
                   <option value="">Todos los Géneros</option>
-                  {genres.map(genre => (
-                    <option key={genre.id} value={genre.id}>{genre.name}</option>
+                  {genres.map((genre) => (
+                    <option key={genre.id} value={genre.id}>
+                      {genre.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -209,8 +225,10 @@ export default function HomePage({ initialMovies, genres }) {
                   className="w-full bg-gray-700/50 rounded-lg px-3 py-2 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 >
                   <option value="">Cualquier Calificación</option>
-                  {[9, 8, 7, 6].map(rating => (
-                    <option key={rating} value={rating}>{rating}+ ⭐</option>
+                  {[9, 8, 7, 6].map((rating) => (
+                    <option key={rating} value={rating}>
+                      {rating}+ ⭐
+                    </option>
                   ))}
                 </select>
               </div>
@@ -223,14 +241,17 @@ export default function HomePage({ initialMovies, genres }) {
                   className="w-full bg-gray-700/50 rounded-lg px-3 py-2 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 >
                   <option value="">Todos los Años</option>
-                  {years.map(year => (
-                    <option key={year} value={year}>{year}</option>
+                  {years.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div className="flex items-end">
                 <button
+                  type="button"
                   onClick={resetFilters}
                   className="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition duration-200 flex items-center justify-center gap-2"
                 >
@@ -242,20 +263,24 @@ export default function HomePage({ initialMovies, genres }) {
           </div>
         )}
 
-        {/* Loading State */}
-        {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        )}
-
-        {/* Movies Grid */}
-        {!isLoading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {/* Movies Grid with Smooth Fade Transition */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab + JSON.stringify(filters)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+          >
             {movies.map((movie) => (
-              <Link 
-                href={`/movie/${movie.id}`} 
+              <Link
+                href={`/movie/${movie.id}`}
                 key={movie.id}
+                onClick={() => {
+                  // Save the current scroll position before navigating to detail view
+                  sessionStorage.setItem('homeScrollPosition', window.screenY);
+                }}
                 className="group bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-xl overflow-hidden hover:scale-105 transition-transform duration-300"
               >
                 <div className="relative aspect-[2/3] overflow-hidden">
@@ -284,15 +309,16 @@ export default function HomePage({ initialMovies, genres }) {
                 </div>
               </Link>
             ))}
-          </div>
-        )}
+          </motion.div>
+        </AnimatePresence>
 
-        {!isLoading && movies.length === 0 && (
-          <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-xl p-12 text-center text-gray-400">
-            No se encontraron películas con los filtros seleccionados.
+        {/* Optionally, if you want a spinner overlay during loading */}
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
           </div>
         )}
       </section>
-    </main>
+    </motion.main>
   );
 }
