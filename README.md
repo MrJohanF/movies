@@ -1,36 +1,169 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🎬 Movie App
 
-## Getting Started
+A modern and responsive movie application built with Next.js 13, featuring movie details, trailers, reviews, and more. The application uses The Movie Database (TMDB) API to fetch movie data.
 
-First, run the development server:
+## 🌟 Features
 
+- 🎥 Browse movies by different categories (Trending, New, Top Rated, All)
+- 🔍 Search functionality for finding specific movies
+- 📊 Filter movies by genre and year
+- 📽️ Detailed movie information including:
+  - Cast and crew details
+  - Movie trailers
+  - User reviews
+  - Movie ratings and runtime
+- ❤️ Like/favorite functionality
+- 📱 Fully responsive design
+- 🎨 Modern UI with smooth animations
+
+## 🚀 Technologies Used
+
+- [Next.js 13](https://nextjs.org/) - React framework with App Router
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+- [Framer Motion](https://www.framer.com/motion/) - Animation library
+- [Lucide React](https://lucide.dev/) - Icon library
+- [TMDB API](https://www.themoviedb.org/documentation/api) - Movie database API
+
+## 📋 Prerequisites
+
+Before you begin, ensure you have:
+
+- Node.js 18.0.0 or later
+- A TMDB API key (get one [here](https://www.themoviedb.org/documentation/api))
+
+## 🛠️ Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/movie-app.git
+cd movie-app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+3. Create a `.env.local` file in the root directory with your TMDB API credentials:
+```env
+NEXT_PUBLIC_TMDB_API_KEY=your_api_key_here
+NEXT_PUBLIC_TMDB_BASE_URL=https://api.themoviedb.org/3
+NEXT_PUBLIC_TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Start the development server:
+```bash
+npm run dev
+```
 
-## Learn More
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-To learn more about Next.js, take a look at the following resources:
+## 📁 Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+movie-app/
+├── app/
+│   ├── layout.js
+│   ├── page.js
+├── components/
+│   ├── MovieCard.jsx
+│   ├── TrailerModal.jsx
+│   └── ReviewCard.jsx
+├── services/
+│   └── movieService.js
+├── movie/[id]/
+│   ├── movieService.js
+│   ├── page.js
+└── public/
+    └── assets/
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🔧 Configuration
 
-## Deploy on Vercel
+The application uses environment variables for configuration. Create a `.env.local` file with the following variables:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```env
+NEXT_PUBLIC_TMDB_API_KEY=your_api_key_here
+NEXT_PUBLIC_TMDB_BASE_URL=https://api.themoviedb.org/3
+NEXT_PUBLIC_TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🎯 API Endpoints
+
+The application uses the following TMDB API endpoints:
+
+- `/services/movieServices` - Get movie data
+
+## 🌐 Environment Setup
+
+### Development
+```bash
+npm run dev
+```
+
+### Production Build
+```bash
+npm run build
+npm run start
+```
+
+## 📱 Responsive Design
+
+The application is fully responsive and optimized for:
+- Mobile devices (320px and up)
+- Tablets (768px and up)
+- Desktops (1024px and up)
+- Large screens (1280px and up)
+
+## 🔄 State Management
+
+- React's built-in useState and useEffect hooks for local state management
+- Efficient data fetching with Next.js
+- Optimized performance with proper loading states
+
+## 🎨 Styling
+
+The project uses Tailwind CSS for styling with:
+- Custom color schemes
+- Responsive design utilities
+- Dark mode by default
+- Custom animations
+- Consistent spacing and typography
+
+## 🚀 Deployment
+
+The application can be deployed to various platforms:
+
+### Vercel (Recommended)
+```bash
+npm run build
+vercel deploy
+```
+
+### Other Platforms
+Ensure your deployment platform supports:
+- Node.js 18+
+- Environment variables
+- API routes
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+
+## 👏 Acknowledgments
+
+- [The Movie Database (TMDB)](https://www.themoviedb.org/) for providing the API
+- [Next.js](https://nextjs.org/) team for the amazing framework
+- [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework
+- [Vercel](https://vercel.com/) for hosting and deployment solutions
+
+## 📧 Contact
+
+Johan Fernandez - hjfernandez@ucompensar.edu.co
+
+Project Link: [https://github.com/mrjohanf/movie-app](https://github.com/mrjohanf/movies)
