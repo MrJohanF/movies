@@ -18,12 +18,21 @@ export default function HomePage({ initialMovies, genres }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
+  const [offsetY, setOffsetY] = useState(0);
 
   const years = Array.from(
     { length: 20 },
     (_, i) => new Date().getFullYear() - i
   );
 
+  // Parallax Effect
+  useEffect(() => {
+    const handleScroll = () => setOffsetY(window.pageYOffset);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Debounced movies loading
   useEffect(() => {
     const loadMovies = async () => {
       setIsLoading(true);
@@ -68,28 +77,36 @@ export default function HomePage({ initialMovies, genres }) {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
-      {/* Hero Section with Gradient Overlay */}
-      <div className="relative h-[80vh]">
+      {/* Hero Section with Parallax */}
+      <div className="relative h-[80vh] overflow-hidden">
+        {/* Parallax Background Image */}
+        <div
+          className="absolute inset-0"
+          style={{ transform: `translateY(${offsetY * 0.5}px)` }}
+        >
+          <Image
+            src="/background.jpg"
+            alt="Featured Movie"
+            fill
+            priority
+            className="object-cover transition-transform duration-500 ease-out"
+          />
+        </div>
+        {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-900/90 to-gray-900" />
-        <Image
-          src="/api/placeholder/1920/1080"
-          alt="Featured Movie"
-          fill
-          priority
-          className="object-cover"
-        />
+        {/* Hero Content */}
         <div className="relative container mx-auto px-4 h-full flex flex-col justify-center items-start">
           <div className="max-w-3xl space-y-6">
-            <h1 className="text-6xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+            <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500">
               Descubre el Cine
             </h1>
-            <p className="text-xl md:text-2xl text-gray-200 max-w-2xl">
-              Explore miles de películas, obtenga recomendaciones personalizadas y manténgase al día con los últimos estrenos.
+            <p className="text-lg md:text-2xl text-gray-200 max-w-2xl">
+              Explora miles de películas, obtén recomendaciones personalizadas y mantente al día con los últimos estrenos.
             </p>
             <div className="relative w-full max-w-2xl">
               <input
                 type="text"
-                placeholder="Buscar peliculas..."
+                placeholder="Buscar películas..."
                 className="w-full px-6 py-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 onChange={handleSearch}
                 value={filters.searchQuery}
@@ -103,52 +120,51 @@ export default function HomePage({ initialMovies, genres }) {
       {/* Quick Stats Section */}
       <div className="container mx-auto px-4 -mt-20 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-xl p-6">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-blue-500/20 rounded-full">
-                <TrendingUp className="w-6 h-6 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-gray-400">Trending Now</p>
-                <p className="text-2xl font-bold">2.7k Movies</p>
+          {[
+            {
+              icon: <TrendingUp className="w-6 h-6 text-blue-500" />,
+              title: 'Trending Now',
+              value: '2.7k Movies',
+              bg: 'bg-blue-500/20'
+            },
+            {
+              icon: <Calendar className="w-6 h-6 text-purple-500" />,
+              title: 'New Releases',
+              value: '485 This Week',
+              bg: 'bg-purple-500/20'
+            },
+            {
+              icon: <Clock className="w-6 h-6 text-green-500" />,
+              title: 'Watch Time',
+              value: '1.2M Hours',
+              bg: 'bg-green-500/20'
+            }
+          ].map((stat, index) => (
+            <div key={index} className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-xl p-6">
+              <div className="flex items-center space-x-4">
+                <div className={`p-3 rounded-full ${stat.bg}`}>
+                  {stat.icon}
+                </div>
+                <div>
+                  <p className="text-gray-400">{stat.title}</p>
+                  <p className="text-2xl font-bold">{stat.value}</p>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-xl p-6">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-purple-500/20 rounded-full">
-                <Calendar className="w-6 h-6 text-purple-500" />
-              </div>
-              <div>
-                <p className="text-gray-400">New Releases</p>
-                <p className="text-2xl font-bold">485 This Week</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-xl p-6">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-green-500/20 rounded-full">
-                <Clock className="w-6 h-6 text-green-500" />
-              </div>
-              <div>
-                <p className="text-gray-400">Watch Time</p>
-                <p className="text-2xl font-bold">1.2M Hours</p>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Movies Section with Tabs */}
+      {/* Movies Section with Tabs and Filters */}
       <section className="container mx-auto px-4 py-12">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           {/* Custom Tabs */}
           <div className="flex bg-gray-800/50 rounded-lg p-1 gap-1">
-            {['all', 'trending', 'new', 'top'].map((tab) => (
+            {['Todo', 'Tendencia', 'Nuevo', 'Mas visto'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-md transition-all ${
+                className={`px-4 py-2 rounded-md transition-colors ${
                   activeTab === tab
                     ? 'bg-blue-500 text-white'
                     : 'text-gray-400 hover:text-white'
@@ -160,23 +176,23 @@ export default function HomePage({ initialMovies, genres }) {
           </div>
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 rounded-lg hover:bg-gray-700 transition"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 rounded-lg hover:bg-gray-700 transition-colors"
           >
             {isFilterOpen ? <X className="w-5 h-5" /> : <Filter className="w-5 h-5" />}
-            {isFilterOpen ? 'Close Filters' : 'Show Filters'}
+            {isFilterOpen ? 'Cerrar Filtros' : 'Mostrar Filtros'}
           </button>
         </div>
 
         {/* Filter Panel */}
         {isFilterOpen && (
-          <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-xl p-6 mb-8">
+          <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-xl p-6 mb-8 transition-all duration-300">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-300">Género</label>
                 <select
                   value={filters.genre}
                   onChange={(e) => handleFilterChange('genre', e.target.value)}
-                  className="w-full bg-gray-700/50 rounded-lg px-3 py-2 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full bg-gray-700/50 rounded-lg px-3 py-2 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 >
                   <option value="">Todos los Géneros</option>
                   {genres.map(genre => (
@@ -190,7 +206,7 @@ export default function HomePage({ initialMovies, genres }) {
                 <select
                   value={filters.rating}
                   onChange={(e) => handleFilterChange('rating', e.target.value)}
-                  className="w-full bg-gray-700/50 rounded-lg px-3 py-2 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full bg-gray-700/50 rounded-lg px-3 py-2 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 >
                   <option value="">Cualquier Calificación</option>
                   {[9, 8, 7, 6].map(rating => (
@@ -204,9 +220,9 @@ export default function HomePage({ initialMovies, genres }) {
                 <select
                   value={filters.year}
                   onChange={(e) => handleFilterChange('year', e.target.value)}
-                  className="w-full bg-gray-700/50 rounded-lg px-3 py-2 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full bg-gray-700/50 rounded-lg px-3 py-2 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 >
-                  <option value="">Todos los años</option>
+                  <option value="">Todos los Años</option>
                   {years.map(year => (
                     <option key={year} value={year}>{year}</option>
                   ))}
@@ -216,7 +232,7 @@ export default function HomePage({ initialMovies, genres }) {
               <div className="flex items-end">
                 <button
                   onClick={resetFilters}
-                  className="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                  className="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition duration-200 flex items-center justify-center gap-2"
                 >
                   <X className="w-4 h-4" />
                   Borrar Filtros
@@ -240,7 +256,7 @@ export default function HomePage({ initialMovies, genres }) {
               <Link 
                 href={`/movie/${movie.id}`} 
                 key={movie.id}
-                className="group bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-xl overflow-hidden hover:scale-105 transition-all duration-300"
+                className="group bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-xl overflow-hidden hover:scale-105 transition-transform duration-300"
               >
                 <div className="relative aspect-[2/3] overflow-hidden">
                   <Image
@@ -261,7 +277,7 @@ export default function HomePage({ initialMovies, genres }) {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-400">{movie.genre}</span>
                     <div className="flex items-center text-yellow-500">
-                      <Star className="w-4 h-4 mr-1 fill-current" />
+                      <Star className="w-4 h-4 mr-1" />
                       <span>{movie.rating}</span>
                     </div>
                   </div>
